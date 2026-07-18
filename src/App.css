@@ -1,0 +1,74 @@
+body {
+  margin: 0;
+  background-color: #000000;
+  color: white;
+  font-family: Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+#menu {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+}
+
+button {
+  color: white;
+  background: transparent;
+  outline: 1px solid rgba(255, 255, 255, 0.75);
+  border: 0px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.element {
+  width: 140px;
+  height: 180px;
+  box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.5);
+  border: 1px solid rgba(127, 255, 255, 0.25);
+  text-align: center;
+  cursor: default;
+  box-sizing: border-box;
+  padding: 10px;
+}
+
+.element:hover {
+  box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.75);
+  border: 1px solid rgba(127, 255, 255, 0.75);
+}
+
+.element .number {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.element .details {
+  position: absolute;
+  bottom: 15px;
+  left: 0px;
+  right: 0px;
+  font-size: 18px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Auth Container */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  z-index: 200;
+  position: relative;
+}

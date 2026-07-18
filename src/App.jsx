@@ -109,9 +109,9 @@ export default function App() {
       else if (rawString.includes('K')) parsedNum *= 1000;
 
       // Color logic based on Assignment Rules
-      if (parsedNum < 100000) element.style.backgroundColor = 'rgba(255, 0, 0, 0.75)'; // Red
-      else if (parsedNum <= 200000) element.style.backgroundColor = 'rgba(255, 165, 0, 0.75)'; // Orange
-      else element.style.backgroundColor = 'rgba(0, 128, 0, 0.75)'; // Green
+      if (parsedNum < 100000) element.style.backgroundColor = '#EF3022'; // Red
+      else if (parsedNum <= 200000) element.style.backgroundColor = '#FDCA35'; // Orange
+      else element.style.backgroundColor = '#3A9F48'; // Green
 
       // HTML Layout utilizing the Image URL
       element.innerHTML = `

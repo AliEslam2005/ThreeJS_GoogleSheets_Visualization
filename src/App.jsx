@@ -108,10 +108,10 @@ export default function App() {
       else if (rawString.includes('M')) parsedNum *= 1000000;
       else if (rawString.includes('K')) parsedNum *= 1000;
 
-      // Color logic based on Assignment Rules
-      if (parsedNum < 100000) element.style.backgroundColor = '#1947b4'; // Red
-      else if (parsedNum <= 200000) element.style.backgroundColor = '#FDCA35'; // Orange
-      else element.style.backgroundColor = '#3A9F48'; // Green
+      // Color logic based on Assignment Rules (with 75% opacity to see behind via hex)
+      if (parsedNum < 100000) element.style.backgroundColor = '#EF3022BF'; // Red 
+      else if (parsedNum <= 200000) element.style.backgroundColor = '#FDCA35BF'; // Orange
+      else element.style.backgroundColor = '#3A9F48BF'; // Green
 
       // HTML Layout utilizing the Image URL
       element.innerHTML = `

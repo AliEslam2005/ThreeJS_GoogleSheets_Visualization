@@ -109,7 +109,7 @@ export default function App() {
       else if (rawString.includes('K')) parsedNum *= 1000;
 
       // Color logic based on Assignment Rules
-      if (parsedNum < 100000) element.style.backgroundColor = '#EF3022'; // Red
+      if (parsedNum < 100000) element.style.backgroundColor = '#004cff'; // Red
       else if (parsedNum <= 200000) element.style.backgroundColor = '#FDCA35'; // Orange
       else element.style.backgroundColor = '#3A9F48'; // Green
 

@@ -91,7 +91,7 @@ export default function App() {
     // Controls setup
     const controls = new TrackballControls(camera, renderer.domElement);
     controls.minDistance = 500;
-    controls.maxDistance = 8000;
+    controls.maxDistance = 15000;
 
     const vector = new THREE.Vector3();
 
@@ -112,10 +112,13 @@ export default function App() {
     const SPHERE_RADIUS = 800;
 
     const HELIX_RADIUS = 900;
-    const HELIX_THETA_STEP = 0.175;
-    const HELIX_Y_SPACING = 15;
+    const HELIX_TOTAL_TURNS = 3; /* number of turns - I chose 3 due to it being optimial amount with no clashing of tiles
+                                    but not spaced out too much where it just looks like 2 stacked circling opposing lines */
+    const HELIX_Y_SPACING = 90;
     const HELIX_PAIRS = Math.ceil(sheetData.length / 2);
+    const HELIX_THETA_STEP = (HELIX_TOTAL_TURNS * 2 * Math.PI) / HELIX_PAIRS;
     const helixOffsetY = ((HELIX_PAIRS - 1) / 2) * HELIX_Y_SPACING;
+    
 
     const GRID_COLS = 5;
     const GRID_ROWS = 4;
@@ -272,7 +275,7 @@ export default function App() {
           <div className="buttons-container">
             <button onClick={() => transform(targetsRef.current.table, 2000)}>TABLE</button>
             <button onClick={() => transform(targetsRef.current.sphere, 2000)}>SPHERE</button>
-            <button onClick={() => transform(targetsRef.current.helix, 2000)}>HELIX</button>
+            <button onClick={() => transform(targetsRef.current.helix, 2000)}> DOUBLE HELIX</button>
             <button onClick={() => transform(targetsRef.current.grid, 2000)}>GRID</button>
           </div>
           <div className="legend">

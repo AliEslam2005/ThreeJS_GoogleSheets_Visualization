@@ -14,7 +14,8 @@ export default function App() {
   // Store Three.js references in refs so they persist without crashing
   const sceneRef = useRef(new THREE.Scene());
   const objectsRef = useRef([]);
-  const targetsRef = useRef({ table: [], sphere: [], helix: [], grid: [] });
+  // Added "pyramid" to the target references
+  const targetsRef = useRef({ table: [], sphere: [], helix: [], grid: [], pyramid: [] });
   // Modern @tweenjs/tween.js global group
   const tweenGroupRef = useRef(new TWEEN.Group());
 
@@ -75,7 +76,8 @@ export default function App() {
     // this one clears previous elements to prevent overlapping canvases
     mountRef.current.innerHTML = '';
     objectsRef.current = [];
-    targetsRef.current = { table: [], sphere: [], helix: [], grid: [] };
+    // Added pyramid target clear
+    targetsRef.current = { table: [], sphere: [], helix: [], grid: [], pyramid: [] };
     const scene = sceneRef.current;
     scene.clear(); 
 
@@ -96,12 +98,6 @@ export default function App() {
     const vector = new THREE.Vector3();
 
     // ---- Layout constants ----------------------------------------------
-    /* 
-    Single source of truth for each shape's spacing/grid dimensions.
-    Centering offsets below are DERIVED from these + the actual row
-    count, so changing a spacing value (or the dataset size) re-centers
-    the shape automatically 
-    */
     const TABLE_COLS = 20;
     const TABLE_SPACING_X = 160;
     const TABLE_SPACING_Y = 200;
@@ -112,24 +108,38 @@ export default function App() {
     const SPHERE_RADIUS = 800;
 
     const HELIX_RADIUS = 900;
-    const HELIX_TOTAL_TURNS = 3; /* number of turns - I chose 3 due to it being optimial amount with no clashing of tiles
-                                    but not spaced out too much where it just looks like 2 stacked circling opposing lines */
+    const HELIX_TOTAL_TURNS = 3; 
     const HELIX_Y_SPACING = 90;
     const HELIX_PAIRS = Math.ceil(sheetData.length / 2);
     const HELIX_THETA_STEP = (HELIX_TOTAL_TURNS * 2 * Math.PI) / HELIX_PAIRS;
     const helixOffsetY = ((HELIX_PAIRS - 1) / 2) * HELIX_Y_SPACING;
     
-
     const GRID_COLS = 5;
     const GRID_ROWS = 4;
     const GRID_SPACING_X = 400;
     const GRID_SPACING_Y = 400;
     const GRID_SPACING_Z = 800;
-    const GRID_PER_LAYER = GRID_COLS * GRID_ROWS; // items per Z-layer (independent of TABLE_COLS - 20 here is a coincidence of 5x4)
+    const GRID_PER_LAYER = GRID_COLS * GRID_ROWS; 
     const GRID_LAYERS = Math.ceil(sheetData.length / GRID_PER_LAYER);
     const gridOffsetX = ((GRID_COLS - 1) / 2) * GRID_SPACING_X;
     const gridOffsetY = ((GRID_ROWS - 1) / 2) * GRID_SPACING_Y;
     const gridOffsetZ = ((GRID_LAYERS - 1) / 2) * GRID_SPACING_Z;
+
+    // Pyramid (Tetrahedron) constants
+    const PYRAMID_RADIUS = 1700;
+    const tetVertices = [
+      new THREE.Vector3(1, 1, 1).normalize().multiplyScalar(PYRAMID_RADIUS),
+      new THREE.Vector3(-1, -1, 1).normalize().multiplyScalar(PYRAMID_RADIUS),
+      new THREE.Vector3(-1, 1, -1).normalize().multiplyScalar(PYRAMID_RADIUS),
+      new THREE.Vector3(1, -1, -1).normalize().multiplyScalar(PYRAMID_RADIUS)
+    ];
+    // Each array represents the 3 vertices defining one of the 4 triangular faces
+    const tetFaces = [
+      [0, 1, 2],
+      [0, 2, 3],
+      [0, 3, 1],
+      [1, 3, 2]
+    ];
     // -----------------------------------------------------------------------
 
     sheetData.forEach((data, i) => {
@@ -148,11 +158,11 @@ export default function App() {
 
       // Color logic based on Assignment Rules (hex values)
       let baseColor;
-      if (parsedNum < 100000) baseColor = '#EF3022'; // Red
-      else if (parsedNum <= 200000) baseColor = '#FDCA35'; // Orange
-      else baseColor = '#3A9F48'; // Green
+      if (parsedNum < 100000) baseColor = '#EF3022'; 
+      else if (parsedNum <= 200000) baseColor = '#FDCA35'; 
+      else baseColor = '#3A9F48'; 
 
-      element.style.backgroundColor = baseColor + '80'; // 50% opacity fill in hex
+      element.style.backgroundColor = baseColor + '80'; // 50% opacity
       element.style.setProperty('--tile-border', baseColor);
       element.style.setProperty('--tile-glow', baseColor + '80');
       // HTML Layout utilizing the Image URL
@@ -173,7 +183,7 @@ export default function App() {
       scene.add(object);
       objectsRef.current.push(object);
 
-      // --- 1. TABLE TARGET (20x10 Arrangement) ---
+      // --- 1. TABLE TARGET ---
       const tableTarget = new THREE.Object3D();
       tableTarget.position.x = ((i % TABLE_COLS) * TABLE_SPACING_X) - tableOffsetX;
       tableTarget.position.y = -(Math.floor(i / TABLE_COLS) * TABLE_SPACING_Y) + tableOffsetY;
@@ -202,12 +212,61 @@ export default function App() {
       helixTarget.lookAt(vector);
       targetsRef.current.helix.push(helixTarget);
 
-      // --- 4. GRID TARGET (5x4x10 Arrangement) ---
+      // --- 4. GRID TARGET ---
       const gridTarget = new THREE.Object3D();
       gridTarget.position.x = ((i % GRID_COLS) * GRID_SPACING_X) - gridOffsetX;
       gridTarget.position.y = -(Math.floor((i % GRID_PER_LAYER) / GRID_COLS) * GRID_SPACING_Y) + gridOffsetY;
       gridTarget.position.z = (Math.floor(i / GRID_PER_LAYER) * GRID_SPACING_Z) - gridOffsetZ;
       targetsRef.current.grid.push(gridTarget);
+
+      // --- 5. PYRAMID (TETRAHEDRON) TARGET ---
+      const pyramidTarget = new THREE.Object3D();
+      const faceIndex = i % 4; // Cycle through the 4 faces
+      const itemIndex = Math.floor(i / 4); // Index of the tile within its specific face
+      
+      // Calculate how many total tiles belong to this specific face to size the triangle grid
+      const totalOnFace = Math.floor((sheetData.length - 1 - faceIndex) / 4) + 1;
+      const maxR = Math.floor((Math.sqrt(1 + 8 * (totalOnFace - 1)) - 1) / 2);
+      
+      // Determine the specific row (r) and column (c) within the triangle grid for this tile
+      const r = Math.floor((Math.sqrt(1 + 8 * itemIndex) - 1) / 2);
+      const c = itemIndex - (r * (r + 1)) / 2;
+      
+      // Calculate barycentric coordinates (u, v, w) to position on a 2D triangle
+      let u, v, w;
+      if (maxR === 0) {
+        u = 1; v = 0; w = 0;
+      } else {
+        const itemsInRow = (r === maxR) ? (totalOnFace - (maxR * (maxR + 1)) / 2) : (r + 1);
+        const cCentered = c + (r + 1 - itemsInRow) / 2; 
+        
+        u = (maxR - r) / maxR;
+        v = (r === 0) ? 0 : (1 - u) * ((r - cCentered) / r);
+        w = (r === 0) ? 0 : (1 - u) * (cCentered / r);
+      }
+      
+      // Add 5% padding so cards shrink toward the center and don't jut out of the edges
+      const pad = 0.05; 
+      u = u * (1 - 3 * pad) + pad;
+      v = v * (1 - 3 * pad) + pad;
+      w = w * (1 - 3 * pad) + pad;
+
+      // Map the 2D coordinates to the actual 3D vertices of the face
+      const faceVertices = tetFaces[faceIndex];
+      const vA = tetVertices[faceVertices[0]];
+      const vB = tetVertices[faceVertices[1]];
+      const vC = tetVertices[faceVertices[2]];
+      
+      pyramidTarget.position.x = u * vA.x + v * vB.x + w * vC.x;
+      pyramidTarget.position.y = u * vA.y + v * vB.y + w * vC.y;
+      pyramidTarget.position.z = u * vA.z + v * vB.z + w * vC.z;
+
+      // Find the center of the face to ensure all tiles perfectly face outwards
+      const faceCenter = new THREE.Vector3().add(vA).add(vB).add(vC).divideScalar(3);
+      vector.copy(pyramidTarget.position).add(faceCenter);
+      pyramidTarget.lookAt(vector);
+      
+      targetsRef.current.pyramid.push(pyramidTarget);
     });
 
     // Window Resize Handler
@@ -277,6 +336,7 @@ export default function App() {
             <button onClick={() => transform(targetsRef.current.sphere, 2000)}>SPHERE</button>
             <button onClick={() => transform(targetsRef.current.helix, 2000)}> DOUBLE HELIX</button>
             <button onClick={() => transform(targetsRef.current.grid, 2000)}>GRID</button>
+            <button onClick={() => transform(targetsRef.current.pyramid, 2000)}>TETRAHEDRON</button>
           </div>
           <div className="legend">
             <span>Low Net Worth</span>
